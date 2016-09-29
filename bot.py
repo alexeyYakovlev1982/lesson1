@@ -1,4 +1,5 @@
 from telegram.ext import Updater, CommandHandler, MessageHandler, Filters
+import answers
 
 def start(bot, update):
 	print ("Вызван /start")
@@ -6,7 +7,8 @@ def start(bot, update):
 
 def talk_to_me(bot, update):
     print('Пришло сообщение: %s' % update.message.text)
-    bot.sendMessage(update.message.chat_id, update.message.text)
+    #bot.sendMessage(update.message.chat_id, update.message.text)
+    bot.sendMessage( update.message.chat_id, answers.get_answer(update.message.text, answers.answers_dict) )
 	
 
 def main():
