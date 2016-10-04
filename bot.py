@@ -44,31 +44,39 @@ def calc(bot, update):
 def litercalc(bot, update):
     print ("Вызван /litercalc")
     message_words = update.message.text.lower().strip()[10:].split()
-    print (message_words)
+    #print (message_words)
 
     if message_words[0] == 'сколько' and message_words[1] == 'будет':
-        bot.sendMessage(update.message.chat_id, 'Вычисление: {}'.format(message_words[2:]))
-        message_words.remove('сколько')
-        message_words.remove('будет')
-        if 'плюс' in message_words: 
-            action = '+'
-            message_words.remove('плюс')
-        if 'минус' in message_words: 
-            action = '-'
-            message_words.remove('минус')
-        if 'умножить' in message_words: 
-            action = '*'
-            message_words.remove('умножить')
-        if 'разделить' in message_words: 
-            action = '/'
-            message_words.remove('разделить')
-        message_words.remove('на')
-        math_result = math_calc('{}{}{}'.format( literal_numbers.index(message_words[0]),action,literal_numbers.index(message_words[1]) ) ) 
-        bot.sendMessage(update.message.chat_id, '{} = {}'.format( update.message.text[10:], math_result))
+        math_result = math_calc (liter_to_math_expression(update.message.text[10:]))
+        bot.sendMessage(update.message.chat_id, str(math_result))
     else:
         bot.sendMessage(update.message.chat_id, 'Cannot find "сколько будет".')
 
+############## math_calc #######################
 
+def liter_to_math_expression(liter_expression):
+    #print ('liter exp {}'.format(liter_expression))
+    words = liter_expression.lower().strip().split()
+    words.remove('сколько')
+    words.remove('будет')
+    #print (words)
+    if 'плюс' in words: 
+        action = '+'
+        words.remove('плюс')
+    if 'минус' in words: 
+        action = '-'
+        words.remove('минус')
+    if 'умножить' in words: 
+        action = '*'
+        words.remove('умножить')
+    if 'разделить' in words: 
+        action = '/'
+        words.remove('разделить')
+    if 'на' in words: words.remove('на')
+
+    #print ('{}{}{}'.format( literal_numbers.index(words[0]),action,literal_numbers.index(words[1])))
+
+    return '{}{}{}'.format( literal_numbers.index(words[0]),action,literal_numbers.index(words[1]) )
 
 
 ############## math_calc #######################
@@ -110,10 +118,14 @@ def talk_to_me(bot, update):
     print( 'Пришло сообщение: {}'.format(update.message.text) )
     bot.sendMessage( update.message.chat_id, answers.get_answer(update.message.text, answers.answers_dict) )
     print( 'last element is {}'.format( update.message.text.strip()[-1:] ) )
+    print( 'first element is {}'.format( update.message.text.strip().split()[0] ) )
      
 
     if update.message.text.strip()[-1:] == '=':
         bot.sendMessage( update.message.chat_id, 'Вычисление: {}{}'.format( update.message.text.strip(), str( math_calc(update.message.text.strip()[:-1]) ) ) )
+
+    if update.message.text.lower().strip().split()[0] == 'сколько' and update.message.text.lower().strip().split()[1] == 'будет':
+        bot.sendMessage( update.message.chat_id, math_calc(liter_to_math_expression(update.message.text)) )
 
 
 ###################### MAIN ################################
