@@ -1,6 +1,7 @@
 
 from telegram.ext import Updater, CommandHandler, MessageHandler, Filters
 import answers
+import ephem
 
 literal_numbers = ('ноль', 'один', 'два', 'три', 'четыре', 'пять', 'шесть', 'семь', 'восемь', 'девять', 'десять')
 
@@ -109,24 +110,28 @@ def math_element_nnvl(element):
         return float(element)
     except:
         return 0
+############## full_moon_calc ####################
+
+def full_moon_calc(full_moon_date):
+    return ephem.next_full_moon(full_moon_date)
 
 ############## talk_to_me ########################
 
-
-
 def talk_to_me(bot, update):
     print( 'Пришло сообщение: {}'.format(update.message.text) )
-    bot.sendMessage( update.message.chat_id, answers.get_answer(update.message.text, answers.answers_dict) )
     print( 'last element is {}'.format( update.message.text.strip()[-1:] ) )
     print( 'first element is {}'.format( update.message.text.strip().split()[0] ) )
      
 
     if update.message.text.strip()[-1:] == '=':
         bot.sendMessage( update.message.chat_id, 'Вычисление: {}{}'.format( update.message.text.strip(), str( math_calc(update.message.text.strip()[:-1]) ) ) )
-
-    if update.message.text.lower().strip().split()[0] == 'сколько' and update.message.text.lower().strip().split()[1] == 'будет':
+    elif update.message.text.lower().strip().split()[0] == 'сколько' and update.message.text.lower().strip().split()[1] == 'будет':
         bot.sendMessage( update.message.chat_id, math_calc(liter_to_math_expression(update.message.text)) )
-
+    elif 'когда ближайшее полнолуние после' in update.message.text.lower():
+        print (ephem.next_full_moon( update.message.text.lower().strip().strip('?').split()[-1:][0] ))
+        bot.sendMessage (update.message.chat_id, str(ephem.next_full_moon( update.message.text.lower().strip().strip('?').split()[-1:][0] ) ))
+    else:
+        bot.sendMessage( update.message.chat_id, answers.get_answer(update.message.text, answers.answers_dict) )
 
 ###################### MAIN ################################
 
