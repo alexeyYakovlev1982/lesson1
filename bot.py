@@ -57,7 +57,7 @@ def litercalc(bot, update):
 
 def liter_to_math_expression(liter_expression):
     #print ('liter exp {}'.format(liter_expression))
-    words = liter_expression.lower().strip().split()
+    words = liter_expression.lower().strip().strip('?').split()
     words.remove('сколько')
     words.remove('будет')
     #print (words)
