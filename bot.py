@@ -60,7 +60,7 @@ def liter_to_math_expression(liter_expression):
     words = liter_expression.lower().strip().strip('?').split()
     words.remove('сколько')
     words.remove('будет')
-    #print (words)
+    print (words)
     if 'плюс' in words: 
         action = '+'
         words.remove('плюс')
@@ -75,9 +75,26 @@ def liter_to_math_expression(liter_expression):
         words.remove('разделить')
     if 'на' in words: words.remove('на')
 
+
+    if words[1] == 'и':
+        element1 = literal_numbers.index(words[0]) + literal_numbers.index(words[2])*0.1
+    else:
+        print ('нет и')
+        element1 = literal_numbers.index(words[0])
+    print ('element1 = {}'.format(element1))
+
+    if words[-2:][0] == 'и':
+        element2 = literal_numbers.index(words[-3:][0]) + literal_numbers.index(words[-1:][0])*0.1
+    else:
+        print ('нет и - 2')
+        element2 = literal_numbers.index(words[-1:][0])
+    print ('element2 = {}'.format(element2))
+
     #print ('{}{}{}'.format( literal_numbers.index(words[0]),action,literal_numbers.index(words[1])))
 
-    return '{}{}{}'.format( literal_numbers.index(words[0]),action,literal_numbers.index(words[1]) )
+    #return '{}{}{}'.format( literal_numbers.index(words[0]),action,literal_numbers.index(words[1]) )
+    print ('{}{}{}'.format( element1, action, element2 ))
+    return '{}{}{}'.format( element1, action, element2 )
 
 
 ############## math_calc #######################
@@ -87,21 +104,21 @@ def math_calc(math_expression):
     math_result = 0
 
     if '+' in math_expression:
-        math_result = int( math_element_nnvl( math_expression.split('+')[0] ) ) + int( math_element_nnvl( math_expression.split('+')[1] ) )
+        math_result = float( math_element_nnvl( math_expression.split('+')[0] ) ) + float( math_element_nnvl( math_expression.split('+')[1] ) )
 
     if '-' in math_expression:
-        math_result = int( math_element_nnvl( math_expression.split('-')[0] ) ) - int( math_element_nnvl( math_expression.split('-')[1] ) )
+        math_result = float( math_element_nnvl( math_expression.split('-')[0] ) ) - float( math_element_nnvl( math_expression.split('-')[1] ) )
 
     if '*' in math_expression:
-        math_result = int( math_element_nnvl( math_expression.split('*')[0] ) ) * int( math_element_nnvl( math_expression.split('*')[1] ) )
+        math_result = float( math_element_nnvl( math_expression.split('*')[0] ) ) * float( math_element_nnvl( math_expression.split('*')[1] ) )
 
     if '/' in math_expression:
-        if int(math_expression.split('/')[1]) == 0:
+        if float(math_expression.split('/')[1]) == 0:
             print ('Деление на 0 недопустимо!')
             #bot.sendMessage(update.message.chat_id, 'Деление на 0 недопустимо!')
             return ('Деление на 0 недопустимо!')
         else:    
-            math_result = int( math_element_nnvl( math_expression.split('/')[0] ) ) / int( math_element_nnvl( math_expression.split('/')[1] ) )
+            math_result = float( math_element_nnvl( math_expression.split('/')[0] ) ) / float( math_element_nnvl( math_expression.split('/')[1] ) )
     
     return math_result
 
