@@ -5,6 +5,8 @@ import ephem
 import re
 import datetime
 
+import csv
+
 import logging
 #logging.basicConfig(level=logging.DEBUG)
 
@@ -113,10 +115,17 @@ def NY(bot, update):
 ############## logging_bot ########################
 
 def logging_bot(username = '', message = ''):
-    with open( log_file_name, 'a', encoding='utf-8' ) as log_file:
-        cur_date = datetime.datetime.strftime(datetime.datetime.now(), "%Y.%m.%d")
-        cur_time = datetime.datetime.strftime(datetime.datetime.now(), "%H:%M:%S.%f")
-        print('{}|{}|{}|{}'.format(cur_date, cur_time, username, message), file=log_file)
+    cur_date = datetime.datetime.strftime(datetime.datetime.now(), "%Y.%m.%d")
+    cur_time = datetime.datetime.strftime(datetime.datetime.now(), "%H:%M:%S.%f")
+    csv_write_list = [cur_date, cur_time, username, message]
+
+    with open(log_file_name, 'a', newline='') as csv_log_file:
+        csv_log_writer = csv.writer(csv_log_file, delimiter='|', quotechar='"', quoting=csv.QUOTE_MINIMAL)
+        csv_log_writer.writerow(csv_write_list)
+
+    #with open( log_file_name, 'a', encoding='utf-8' ) as log_file:
+
+    #    print('{}|{}|{}|{}'.format(cur_date, cur_time, username, message), file=log_file)
 
 
 ############## talk_to_me ########################
