@@ -1,22 +1,44 @@
 
 from telegram.ext import Updater, CommandHandler, MessageHandler, Filters
-import answers
+#import answers
 import ephem
+import re
+import datetime
+
+import logging
+#logging.basicConfig(level=logging.DEBUG)
+
+from answers import get_answer, ask_user, liter_to_math_expression, math_calc, full_moon_calc, get_answer, cont_days_to_NY
+
+
 
 literal_numbers = ('ноль', 'один', 'два', 'три', 'четыре', 'пять', 'шесть', 'семь', 'восемь', 'девять', 'десять')
+answers_dict = { "привет": "И тебе привет!", "как дела": "Лучше всех", "пока": "Увидимся", "когда на работу":"завтра", "ты мне надоел":"не бросай меня!" }
+
+log_file_name = 'bot_log_{}.csv'.format( datetime.datetime.strftime(datetime.datetime.now(), "%Y%m%d%H%M%S") )
+
+
+############## start ########################
 
 def start(bot, update):
     print ("Вызван /start")
+    user_info = '{} {} {}'.format(update.message.from_user.id, update.message.from_user.first_name, update.message.from_user.last_name)
+    logging_bot (user_info, update.message.text)
     bot.sendMessage(update.message.chat_id, text='Давай общаться!')
+    logging_bot (bot.getMe().username, 'Давай общаться')
+
 
 ############## count ########################
 
 def count(bot, update):
     print ("Вызван /count")
+    user_info = '{} {} {}'.format(update.message.from_user.id, update.message.from_user.first_name, update.message.from_user.last_name)
+    logging_bot (user_info, update.message.text) 
+
     answer_text = 'Количество слов {}'.format( str( count_words(update.message.text)-1 ) )
     print ('/count ' + answer_text)
     bot.sendMessage(update.message.chat_id, text=answer_text)
-
+    logging_bot (bot.getMe().username, answer_text)
 
 def count_words(message):
     return len(message.split())
@@ -26,111 +48,76 @@ def count_words(message):
 
 def count2(bot, update):
     print ("Вызван /count2")
-    bot.sendMessage(update.message.chat_id, text='Количество слов {}'.format( str(  len( update.message.text[7:].split() ) )  ) )
+    user_info = '{} {} {}'.format(update.message.from_user.id, update.message.from_user.first_name, update.message.from_user.last_name)
+    logging_bot (user_info, update.message.text)
+    answer = 'Количество слов {}'.format( str(  len( update.message.text[7:].split() ) )  ) 
 
+    bot.sendMessage(update.message.chat_id, answer)
+    logging_bot (bot.getMe().username, answer)
 
 ############## /calc ################
 
 def calc(bot, update):
     print ("Вызван /calc")
+    user_info = '{} {} {}'.format(update.message.from_user.id, update.message.from_user.first_name, update.message.from_user.last_name)
+    logging_bot (user_info, update.message.text)
     if update.message.text.strip()[-1:] != '=':
-        bot.sendMessage(update.message.chat_id, 'Последний элемент должен быть = ')
-        return
+        answer = 'Последний элемент должен быть = '
     else:
-        bot.sendMessage(update.message.chat_id, 'Рeзультат = {}'.format( str( math_calc (update.message.text.strip()[5:-1].strip()) ) ) )
+        answer = 'Рeзультат = {}'.format( str( math_calc (update.message.text.strip()[5:-1].strip()) ) ) 
+
+    bot.sendMessage(update.message.chat_id, answer)
+    logging_bot (bot.getMe().username, answer)
 
 
 ############## /litercalc ################
 
 def litercalc(bot, update):
     print ("Вызван /litercalc")
+    user_info = '{} {} {}'.format(update.message.from_user.id, update.message.from_user.first_name, update.message.from_user.last_name)
+    logging_bot (user_info, update.message.text)
     message_words = update.message.text.lower().strip()[10:].split()
     #print (message_words)
 
     if message_words[0] == 'сколько' and message_words[1] == 'будет':
         math_result = math_calc (liter_to_math_expression(update.message.text[10:]))
-        bot.sendMessage(update.message.chat_id, str(math_result))
+        answer = str(math_result)
     else:
-        bot.sendMessage(update.message.chat_id, 'Cannot find "сколько будет".')
-
-############## math_calc #######################
-
-def liter_to_math_expression(liter_expression):
-    #print ('liter exp {}'.format(liter_expression))
-    words = liter_expression.lower().strip().strip('?').split()
-    words.remove('сколько')
-    words.remove('будет')
-    print (words)
-    if 'плюс' in words: 
-        action = '+'
-        words.remove('плюс')
-    if 'минус' in words: 
-        action = '-'
-        words.remove('минус')
-    if 'умножить' in words: 
-        action = '*'
-        words.remove('умножить')
-    if 'разделить' in words: 
-        action = '/'
-        words.remove('разделить')
-    if 'на' in words: words.remove('на')
+        answer = 'Cannot find "сколько будет".'
+    bot.sendMessage(update.message.chat_id, answer)
+    logging_bot (bot.getMe().username, answer)
 
 
-    if words[1] == 'и':
-        element1 = literal_numbers.index(words[0]) + literal_numbers.index(words[2])*0.1
-    else:
-        print ('нет и')
-        element1 = literal_numbers.index(words[0])
-    print ('element1 = {}'.format(element1))
+############## /NY ################
 
-    if words[-2:][0] == 'и':
-        element2 = literal_numbers.index(words[-3:][0]) + literal_numbers.index(words[-1:][0])*0.1
-    else:
-        print ('нет и - 2')
-        element2 = literal_numbers.index(words[-1:][0])
-    print ('element2 = {}'.format(element2))
-
-    #print ('{}{}{}'.format( literal_numbers.index(words[0]),action,literal_numbers.index(words[1])))
-
-    #return '{}{}{}'.format( literal_numbers.index(words[0]),action,literal_numbers.index(words[1]) )
-    print ('{}{}{}'.format( element1, action, element2 ))
-    return '{}{}{}'.format( element1, action, element2 )
-
-
-############## math_calc #######################
-
-def math_calc(math_expression):
-
-    math_result = 0
-
-    if '+' in math_expression:
-        math_result = float( math_element_nnvl( math_expression.split('+')[0] ) ) + float( math_element_nnvl( math_expression.split('+')[1] ) )
-
-    if '-' in math_expression:
-        math_result = float( math_element_nnvl( math_expression.split('-')[0] ) ) - float( math_element_nnvl( math_expression.split('-')[1] ) )
-
-    if '*' in math_expression:
-        math_result = float( math_element_nnvl( math_expression.split('*')[0] ) ) * float( math_element_nnvl( math_expression.split('*')[1] ) )
-
-    if '/' in math_expression:
-        if float(math_expression.split('/')[1]) == 0:
-            print ('Деление на 0 недопустимо!')
-            #bot.sendMessage(update.message.chat_id, 'Деление на 0 недопустимо!')
-            return ('Деление на 0 недопустимо!')
-        else:    
-            math_result = float( math_element_nnvl( math_expression.split('/')[0] ) ) / float( math_element_nnvl( math_expression.split('/')[1] ) )
+def NY(bot, update):
+    print ("Вызван /NY")
+    user_info = '{} {} {}'.format(update.message.from_user.id, update.message.from_user.first_name, update.message.from_user.last_name)
+    logging_bot (user_info, update.message.text)
+    date_text = update.message.text.strip()[3:].strip()
+    #print (date_text)
+    if '-' in date_text:
+        date_text_separ = date_text.split('-')
+    elif '/' in date_text:
+        date_text_separ = date_text.split('/')
+    #print (date_text_separ)
+    initial_date = datetime.date(int(date_text_separ[0]), int(date_text_separ[1]), int(date_text_separ[2]))
+    #print (initial_date)
+    answer = 'До нового года {}'.format(cont_days_to_NY(initial_date) )
+    print (answer)
     
-    return math_result
+    bot.sendMessage(update.message.chat_id, answer)
+    logging_bot (bot.getMe().username, answer)
 
-def math_element_nnvl(element):
-    try: 
-        return float(element)
-    except:
-        return 0
-############## full_moon_calc ####################
 
-def full_moon_calc(full_moon_date):
-    return ephem.next_full_moon(full_moon_date)
+############## logging_bot ########################
+
+def logging_bot(username = '', message = ''):
+    with open( log_file_name, 'a', encoding='utf-8' ) as log_file:
+        cur_date = datetime.datetime.strftime(datetime.datetime.now(), "%Y.%m.%d")
+        cur_time = datetime.datetime.strftime(datetime.datetime.now(), "%H:%M:%S.%f")
+        print('{}|{}|{}|{}'.format(cur_date, cur_time, username, message), file=log_file)
+
 
 ############## talk_to_me ########################
 
@@ -138,22 +125,24 @@ def talk_to_me(bot, update):
     print( 'Пришло сообщение: {}'.format(update.message.text) )
     print( 'last element is {}'.format( update.message.text.strip()[-1:] ) )
     print( 'first element is {}'.format( update.message.text.strip().split()[0] ) )
-     
-
-    if update.message.text.strip()[-1:] == '=':
-        bot.sendMessage( update.message.chat_id, 'Вычисление: {}{}'.format( update.message.text.strip(), str( math_calc(update.message.text.strip()[:-1]) ) ) )
-    elif update.message.text.lower().strip().split()[0] == 'сколько' and update.message.text.lower().strip().split()[1] == 'будет':
-        bot.sendMessage( update.message.chat_id, math_calc(liter_to_math_expression(update.message.text)) )
-    elif 'когда ближайшее полнолуние после' in update.message.text.lower():
-        print (ephem.next_full_moon( update.message.text.lower().strip().strip('?').split()[-1:][0] ))
-        bot.sendMessage (update.message.chat_id, str(ephem.next_full_moon( update.message.text.lower().strip().strip('?').split()[-1:][0] ) ))
-    else:
-        bot.sendMessage( update.message.chat_id, answers.get_answer(update.message.text, answers.answers_dict) )
-
+    
+    user_info = '{} {} {}'.format(update.message.from_user.id, update.message.from_user.first_name, update.message.from_user.last_name)
+    logging_bot (user_info, update.message.text) 
+    
+    answer = get_answer(update.message.text)
+    bot.sendMessage( update.message.chat_id, answer )
+    
+    #print ('user is {} {} {}'.format(update.message.from_user.id, update.message.from_user.first_name, update.message.from_user.last_name))
+    #print (bot.getMe().username)
+    #print ('{}|{}|{} {}|{}'.format(str(datetime.strftime(datetime.now(), "%Y.%m.%d")), str(datetime.strftime(datetime.now(), "%H:%M:%S.%f")), update.message.from_user.first_name, update.message.from_user.last_name, update.message.text)
+    #print ('{}|{}'.format( datetime.datetime.strftime(datetime.datetime.now(), "%Y.%m.%d"), datetime.datetime.strftime(datetime.datetime.now(), "%H:%M:%S.%f") ) )
+    logging_bot (bot.getMe().username, answer)
+    
 ###################### MAIN ################################
 
 def main():
     updater = Updater("246802878:AAGL7HFqKYQ0gBaXiaYe2lRF6gVOJYPVJmw")
+    
 
     dp = updater.dispatcher
     dp.add_handler(CommandHandler("start", start))
@@ -161,6 +150,7 @@ def main():
     dp.add_handler(CommandHandler("count2", count2))
     dp.add_handler(CommandHandler("calc", calc))
     dp.add_handler(CommandHandler("litercalc", litercalc))
+    dp.add_handler(CommandHandler("NY", NY))
     dp.add_handler(MessageHandler([Filters.text], talk_to_me))
 
     updater.start_polling()
