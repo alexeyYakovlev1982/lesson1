@@ -11,6 +11,7 @@ import logging
 #logging.basicConfig(level=logging.DEBUG)
 
 from answers import get_answer, ask_user, liter_to_math_expression, math_calc, full_moon_calc, get_answer, cont_days_to_NY
+import mysql_bot
 
 
 
@@ -112,6 +113,22 @@ def NY(bot, update):
     logging_bot (bot.getMe().username, answer)
 
 
+############## /top5_girl_names ################
+def top5_girl_names(bot, update):
+    print ("Вызван /top5_girl_names")
+    user_info = '{} {} {}'.format(update.message.from_user.id, update.message.from_user.first_name, update.message.from_user.last_name)
+    logging_bot (user_info, update.message.text)
+
+    date_text = update.message.text.strip().split()[1].strip().strip('?')
+    print (date_text)
+
+    answer = mysql_bot.top5_girl_names(date_text)
+
+    bot.sendMessage(update.message.chat_id, answer)
+    logging_bot (bot.getMe().username, answer)
+
+
+
 ############## logging_bot ########################
 
 def logging_bot(username = '', message = ''):
@@ -126,6 +143,7 @@ def logging_bot(username = '', message = ''):
     #with open( log_file_name, 'a', encoding='utf-8' ) as log_file:
 
     #    print('{}|{}|{}|{}'.format(cur_date, cur_time, username, message), file=log_file)
+
 
 
 ############## talk_to_me ########################
@@ -160,6 +178,7 @@ def main():
     dp.add_handler(CommandHandler("calc", calc))
     dp.add_handler(CommandHandler("litercalc", litercalc))
     dp.add_handler(CommandHandler("NY", NY))
+    dp.add_handler(CommandHandler("top5_girl_names", top5_girl_names))
     dp.add_handler(MessageHandler([Filters.text], talk_to_me))
 
     updater.start_polling()
